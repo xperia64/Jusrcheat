@@ -18,7 +18,7 @@ public class R4Code implements R4Item {
 	public R4Code(short numChunks, short flags, RandomAccessFile raf) throws IOException
 	{
 		this.numChunks = (numChunks)&0xFFFF;
-		this.codeEnabled = ((flags&0x1000)==0x1000);
+		this.codeEnabled = ((flags&0x0100)==0x0100);
 		StringBuilder sb = new StringBuilder();
 		byte tmpChar;
 		while((tmpChar=raf.readByte())!=0)

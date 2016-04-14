@@ -61,7 +61,7 @@ public class R4Game {
 			raf.read(tmpba);
 			short flags = EndianUtils.little2short(tmpba);
 			
-			if((flags&0x0100)==0x0100)
+			if((flags&0x1000)==0x1000)
 			{
 				// Folder
 				i++;

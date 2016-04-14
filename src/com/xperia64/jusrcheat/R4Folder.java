@@ -16,7 +16,7 @@ public class R4Folder implements R4Item {
 	public R4Folder(short numCodes, short flags, RandomAccessFile raf) throws IOException
 	{
 		this.numCodes = (numCodes)&0xFFFF;
-		this.oneHot = ((flags&0x1000)==0x1000);
+		this.oneHot = ((flags&0x0100)==0x0100);
 		StringBuilder sb = new StringBuilder();
 		byte tmpChar;
 		while((tmpChar=raf.readByte())!=0)
@@ -40,7 +40,7 @@ public class R4Folder implements R4Item {
 			raf.read(tmpba);
 			short cflags = EndianUtils.little2short(tmpba);
 			
-			if((cflags&0x0100)==0x0100)
+			if((cflags&0x1000)==0x1000)
 			{
 				// Folder
 				System.out.println("Error: Folder in folder");
