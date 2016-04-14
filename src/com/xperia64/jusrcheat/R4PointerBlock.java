@@ -1,7 +1,9 @@
 package com.xperia64.jusrcheat;
 
 import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.DataInputStream;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -9,20 +11,22 @@ public class R4PointerBlock {
 	private ArrayList<R4GamePointer> gamePointers;
 	
 	// Never edit the existing PointerBlock. Always create a new one
-	public R4PointerBlock(RandomAccessFile raf, int dataOffset) throws IOException
+	public R4PointerBlock(String inFile, int dataOffset) throws IOException
 	{
 		gamePointers = new ArrayList<>();
-		raf.seek(dataOffset);
+		DataInputStream input = new DataInputStream(new BufferedInputStream(new FileInputStream(inFile)));
+		input.skip(dataOffset);
 		byte[] tmp = new byte[0x10];
 		while(true)
 		{
-			raf.read(tmp);
+			input.read(tmp);
 			if(tmp[0]==0)
 			{
 				break;
 			}
 			gamePointers.add(new R4GamePointer(tmp));
 		}
+		input.close();
 	}
 	public R4PointerBlock(ArrayList<R4Game> gamz)
 	{

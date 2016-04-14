@@ -1,7 +1,9 @@
 package com.xperia64.jusrcheat;
 
 import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.DataInputStream;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -20,34 +22,36 @@ public class R4Game {
 	private ArrayList<R4Item> items;
 	
 	// Read an existing game
-	public R4Game(RandomAccessFile raf, int pointer, String gameId, int gameIdNum) throws IOException
+	public R4Game(String inFile, int pointer, String gameId, int gameIdNum) throws IOException
 	{
-		raf.seek(pointer);
+		DataInputStream input = new DataInputStream(new BufferedInputStream(new FileInputStream(inFile)));
+
+		input.skip(pointer);
 		this.gameId = gameId;
 		this.gameIdNum = gameIdNum;
 		byte tmpChar;
 		StringBuilder sb = new StringBuilder();
-		while((tmpChar=raf.readByte())!=0)
+		while((tmpChar=input.readByte())!=0)
 		{
 			sb.append((char)tmpChar);
 		}
 		gameTitle = sb.toString();
 		// Align to nearest multiple of 4
-		raf.skipBytes(EndianUtils.alignto4(raf.getFilePointer()));
+		input.skipBytes(EndianUtils.alignto4(gameTitle.length()+1));
 		
 		// Get number of codes/folders
 		byte[] tmpba = new byte[2];
-		raf.read(tmpba);
+		input.read(tmpba);
 		
 		numItems = (EndianUtils.little2short(tmpba)&0xFFFF);
 		// Get flags
-		raf.read(tmpba);
+		input.read(tmpba);
 		gameEnabled = (tmpba[1] & 0xF0) == 0xF0;
 		
 		tmpba = new byte[4];
 		for(int i = 0; i<masterCode.length; i++)
 		{
-			raf.read(tmpba);
+			input.read(tmpba);
 			masterCode[i] = EndianUtils.little2int(tmpba);
 		}
 		items = new ArrayList<>();
@@ -56,25 +60,26 @@ public class R4Game {
 		int i = 0;
 		while(i<numItems)
 		{
-			raf.read(tmpba);
+			input.read(tmpba);
 			short numberThings = EndianUtils.little2short(tmpba);
-			raf.read(tmpba);
+			input.read(tmpba);
 			short flags = EndianUtils.little2short(tmpba);
 			
 			if((flags&0x1000)==0x1000)
 			{
 				// Folder
 				i++;
-				R4Folder tmpFold = new R4Folder(numberThings, flags, raf);
+				R4Folder tmpFold = new R4Folder(numberThings, flags, input);
 				i += (numberThings&0xFFFF);
 				items.add(tmpFold);
 			}else{
 				// Code
 				i++;
-				R4Code tmpCode = new R4Code(numberThings, flags, raf);
+				R4Code tmpCode = new R4Code(numberThings, flags, input);
 				items.add(tmpCode);
 			}
 		}
+		input.close();
 	}
 	// Create a new game
 	public R4Game(String gameId, int gameIdNum, String gameTitle)

@@ -1,7 +1,9 @@
 package com.xperia64.jusrcheat;
 
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.Arrays;
 
 public class R4Header {
@@ -33,11 +35,12 @@ public class R4Header {
 		setCheatEnable(enable);
 	}
 	
-	public R4Header(RandomAccessFile raf) throws IOException
+	public R4Header(String inFile) throws IOException
 	{
 		header = new byte[HEADER_SIZE];
-		raf.seek(0);
-		raf.read(header);
+		DataInputStream input = new DataInputStream(new BufferedInputStream(new FileInputStream(inFile)));
+		input.read(header);
+		input.close();
 	}
 	
 	public String getDatabaseName()

@@ -1,7 +1,7 @@
 package com.xperia64.jusrcheat;
 
 import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.DataInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -13,31 +13,34 @@ public class R4Folder implements R4Item {
 	private String foldDesc;
 	
 	private ArrayList<R4Code> codes;
-	public R4Folder(short numCodes, short flags, RandomAccessFile raf) throws IOException
+	public R4Folder(short numCodes, short flags, DataInputStream input) throws IOException
 	{
 		this.numCodes = (numCodes)&0xFFFF;
+		
+		// On some games, certain folders appear to have 0x0001 as a flag
+		// Unknown what this is
 		this.oneHot = ((flags&0x0100)==0x0100);
 		StringBuilder sb = new StringBuilder();
 		byte tmpChar;
-		while((tmpChar=raf.readByte())!=0)
+		while((tmpChar=input.readByte())!=0)
 		{
 			sb.append((char)tmpChar);
 		}
 		this.foldName = sb.toString();
 		sb = new StringBuilder();
-		while((tmpChar=raf.readByte())!=0)
+		while((tmpChar=input.readByte())!=0)
 		{
 			sb.append((char)tmpChar);
 		}
 		this.foldDesc = sb.toString();
-		raf.skipBytes(EndianUtils.alignto4(raf.getFilePointer()));
+		input.skipBytes(EndianUtils.alignto4(foldName.length()+foldDesc.length()+2));
 		codes = new ArrayList<>();
 		byte[] tmpba = new byte[2];
 		for(int i = 0; i<this.numCodes; i++)
 		{
-			raf.read(tmpba);
+			input.read(tmpba);
 			short numberThings = EndianUtils.little2short(tmpba);
-			raf.read(tmpba);
+			input.read(tmpba);
 			short cflags = EndianUtils.little2short(tmpba);
 			
 			if((cflags&0x1000)==0x1000)
@@ -46,7 +49,7 @@ public class R4Folder implements R4Item {
 				System.out.println("Error: Folder in folder");
 			}else{
 				// Code
-				R4Code tmpCode = new R4Code(numberThings, cflags, raf);
+				R4Code tmpCode = new R4Code(numberThings, cflags, input);
 				codes.add(tmpCode);
 			}
 		}

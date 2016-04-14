@@ -1,7 +1,7 @@
 package com.xperia64.jusrcheat;
 
 import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.DataInputStream;
 import java.util.ArrayList;
 
 public class R4Code implements R4Item {
@@ -15,31 +15,31 @@ public class R4Code implements R4Item {
 	
 	// Note: Alignment happens after description
 
-	public R4Code(short numChunks, short flags, RandomAccessFile raf) throws IOException
+	public R4Code(short numChunks, short flags, DataInputStream input) throws IOException
 	{
 		this.numChunks = (numChunks)&0xFFFF;
 		this.codeEnabled = ((flags&0x0100)==0x0100);
 		StringBuilder sb = new StringBuilder();
 		byte tmpChar;
-		while((tmpChar=raf.readByte())!=0)
+		while((tmpChar=input.readByte())!=0)
 		{
 			sb.append((char)tmpChar);
 		}
 		this.codeName = sb.toString();
 		sb = new StringBuilder();
-		while((tmpChar=raf.readByte())!=0)
+		while((tmpChar=input.readByte())!=0)
 		{
 			sb.append((char)tmpChar);
 		}
 		this.codeDesc = sb.toString();
-		raf.skipBytes(EndianUtils.alignto4(raf.getFilePointer()));
+		input.skipBytes(EndianUtils.alignto4(codeName.length()+codeDesc.length()+2));
 		byte[] tmpba = new byte[4];
-		raf.read(tmpba);
+		input.read(tmpba);
 		numCodeChunks = EndianUtils.little2int(tmpba);
 		code = new ArrayList<>();
 		for(int i = 0; i<numCodeChunks; i++)
 		{
-			raf.read(tmpba);
+			input.read(tmpba);
 			code.add(EndianUtils.little2int(tmpba));
 		}
 	}

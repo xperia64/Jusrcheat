@@ -1,7 +1,9 @@
 package com.xperia64.jusrcheat;
 
+import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
 
 import com.xperia64.jusrcheat.R4PointerBlock.R4GamePointer;
@@ -50,22 +52,44 @@ public class R4Cheat {
 	 * 
 	 */
 	
-	public static ArrayList<R4Game> getGames(RandomAccessFile raf, R4Header header) throws IOException
+	public interface R4ProgressCallback
+	{
+		void setProgress(int num, int max);
+	}
+	
+	public static ArrayList<R4Game> getGames(String inFile, R4Header header) throws IOException
 	{
 		int offset = header.getCodeOffset();
-		R4PointerBlock block = new R4PointerBlock(raf, offset);
+		R4PointerBlock block = new R4PointerBlock(inFile, offset);
 		ArrayList<R4Game> games = new ArrayList<>();
-		for(int i = 0; i<block.getNumGames(); i++)
+		int numGames = block.getNumGames();
+		for(int i = 0; i<numGames; i++)
 		{
 			R4GamePointer tmp = block.getGame(i);
-			R4Game game = new R4Game(raf, tmp.getPointer(), tmp.getGameId(), tmp.getGameIdNum());
+			R4Game game = new R4Game(inFile, tmp.getPointer(), tmp.getGameId(), tmp.getGameIdNum());
 			games.add(game);
 		}
 		return games;
 	}
 	
-	public static void writeUsrCheat(RandomAccessFile raf, R4Header header, ArrayList<R4Game> games ) throws IOException
+	public static ArrayList<R4Game> getGames(String inFile, R4Header header, R4ProgressCallback prog) throws IOException
 	{
+		int offset = header.getCodeOffset();
+		R4PointerBlock block = new R4PointerBlock(inFile, offset);
+		ArrayList<R4Game> games = new ArrayList<>();
+		int numGames = block.getNumGames();
+		for(int i = 0; i<numGames; i++)
+		{
+			R4GamePointer tmp = block.getGame(i);
+			R4Game game = new R4Game(inFile, tmp.getPointer(), tmp.getGameId(), tmp.getGameIdNum());
+			games.add(game);
+			prog.setProgress(i, numGames);
+		}
+		return games;
+	}
+	public static void writeUsrCheat(String outFile, R4Header header, ArrayList<R4Game> games ) throws IOException
+	{
+		DataOutputStream output = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(outFile)));
 		byte[] headerArr = header.toByte();
 		R4PointerBlock newBlock = new R4PointerBlock(games);
 		
@@ -75,9 +99,8 @@ public class R4Cheat {
 		{
 			newBlockArr2[o] = newBlockArr1[o];
 		}
-		raf.seek(0);
-		raf.write(headerArr);
-		raf.write(newBlockArr2);
+		output.write(headerArr);
+		output.write(newBlockArr2);
 		for(int i = 0; i<games.size(); i++)
 		{
 			Byte[] b = games.get(i).toByte();
@@ -86,7 +109,8 @@ public class R4Cheat {
 			{
 				bb[o] = b[o];
 			}
-			raf.write(bb);
+			output.write(bb);
 		}
+		output.close();
 	}
 }

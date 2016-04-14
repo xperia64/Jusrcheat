@@ -31,13 +31,14 @@ public class EndianUtils {
 		return b;
 	}
 	
+	// Note: &3 = %4
 	public static int alignto4(long pos)
 	{
-		return (int) ((4-(pos%4))%4);
+		return (int) ((4-(pos&3))&3);
 	}
 	public static int alignstr(int len)
 	{
-		return ((4-(len%4)))+len;
+		return ((4-(len&3)))+len;
 	}
 	public static byte[] str2byte(String s, boolean padding)
 	{
