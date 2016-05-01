@@ -51,7 +51,7 @@ public class R4PointerBlock {
 	
 	public Byte[] toByte()
 	{
-		ArrayList<Byte> b = new ArrayList<Byte>();
+		ArrayList<Byte> b = new ArrayList<>();
 		for(int i = 0; i<gamePointers.size(); i++)
 		{
 			b.addAll(Arrays.asList(gamePointers.get(i).toByte()));

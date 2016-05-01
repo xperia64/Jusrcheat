@@ -128,18 +128,12 @@ public class R4Header {
 	public void setCodeOffset(int offset)
 	{
 		byte[] b = EndianUtils.int2little(offset);
-		for(int i = 0; i<4; i++)
-		{
-			header[i+0x0C] = b[i];
-		}
+		System.arraycopy(b, 0, header, 0x0C, 4);
 	}
 	public void resetCodeOffset()
 	{
 		byte[] b = EndianUtils.int2little(START_OFFSET);
-		for(int i = 0; i<4; i++)
-		{
-			header[i+0x0C] = b[i];
-		}
+		System.arraycopy(b, 0, header, 0x0C, 4);
 	}
 	public byte[] toByte()
 	{

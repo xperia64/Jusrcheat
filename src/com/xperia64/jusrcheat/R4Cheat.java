@@ -1,10 +1,14 @@
 package com.xperia64.jusrcheat;
 
 import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 
 import com.xperia64.jusrcheat.R4PointerBlock.R4GamePointer;
 
@@ -101,7 +105,8 @@ public class R4Cheat {
 		}
 		output.write(headerArr);
 		output.write(newBlockArr2);
-		for(int i = 0; i<games.size(); i++)
+		int numGames = games.size();
+		for(int i = 0; i<numGames; i++)
 		{
 			Byte[] b = games.get(i).toByte();
 			byte[] bb = new byte[b.length];
@@ -112,5 +117,96 @@ public class R4Cheat {
 			output.write(bb);
 		}
 		output.close();
+	}
+	public static void writeUsrCheat(String outFile, R4Header header, ArrayList<R4Game> games ,R4ProgressCallback prog) throws IOException
+	{
+		DataOutputStream output = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(outFile)));
+		byte[] headerArr = header.toByte();
+		R4PointerBlock newBlock = new R4PointerBlock(games);
+
+		Byte[] newBlockArr1 = newBlock.toByte();
+		byte[] newBlockArr2 = new byte[newBlockArr1.length];
+		for(int o = 0; o< newBlockArr1.length; o++)
+		{
+			newBlockArr2[o] = newBlockArr1[o];
+		}
+		output.write(headerArr);
+		output.write(newBlockArr2);
+		int numGames = games.size();
+		for(int i = 0; i<numGames; i++)
+		{
+			Byte[] b = games.get(i).toByte();
+			byte[] bb = new byte[b.length];
+			for(int o = 0; o< b.length; o++)
+			{
+				bb[o] = b[o];
+			}
+			output.write(bb);
+			prog.setProgress(i, numGames);
+		}
+		output.close();
+	}
+	public static String[] getIds(String file) throws IOException
+	{
+		byte[] header = new byte[0x200];
+		RandomAccessFile raf = new RandomAccessFile(file, "r");
+		raf.read(header);
+		raf.close();
+		String s = new String(header, 0x0C, 4);
+		Checksum crc = new CRC32();
+		crc.update(header, 0, header.length);
+		int chck = (int)((~crc.getValue()));
+		return new String[]{s, String.format("%08X",chck)};
+	}
+
+
+	public static int validateGame(String title, String id1, String master)
+	{
+		if(title.isEmpty())
+		{
+			return 1;
+		}else if(id1.isEmpty())
+		{
+			return 2;
+		}else if(master.isEmpty())
+		{
+			return 3;
+		}
+		master = master.replaceAll("[\n]+"," ");
+		master = master.replaceAll("[ ]+"," ");
+		String[] tmp = master.split(" ");
+		if(tmp.length!=8) {
+			return 4;
+		}
+		for(String s : tmp)
+		{
+			if(!s.matches("([0-9a-fA-F]{8})"))
+			{
+				return 5;
+			}
+		}
+		return 0;
+	}
+	public static int validateCode(String title, String code)
+	{
+		if(title.isEmpty())
+		{
+			return 1;
+		}
+		code = code.replaceAll("[\n]+"," ");
+		code = code.replaceAll("[ ]+"," ");
+		if(code.isEmpty())
+		{
+			return 0;
+		}
+		String[] tmp = code.split(" ");
+		for(String s : tmp)
+		{
+			if(!s.matches("([0-9a-fA-F]{8})"))
+			{
+				return 2;
+			}
+		}
+		return 0;
 	}
 }

@@ -2,6 +2,7 @@ package com.xperia64.jusrcheat;
 
 import java.io.IOException;
 import java.io.DataInputStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class R4Code implements R4Item {
@@ -53,9 +54,47 @@ public class R4Code implements R4Item {
 	{
 		return code;
 	}
+	public String getCodeStr()
+	{
+		if(code.isEmpty())
+		{
+			return "";
+		}
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i<code.size(); i+=2)
+		{
+			sb.append(String.format("%08X %08X\n",code.get(i), code.get(i+1)));
+		}
+		return sb.substring(0, sb.length()-1);
+	}
 	public void addCode(int cod)
 	{
 		code.add(cod);
+	}
+	public boolean addAll(String s)
+	{
+		s = s.replaceAll("[\n]+"," ");
+		s = s.replaceAll("[ ]+"," ");
+		for(String ss : s.split(" "))
+		{
+			if(ss.length()!=8)
+			{
+				return false;
+			}
+			try{
+				code.add((int)Long.parseLong(ss, 16));
+			}catch(NumberFormatException e)
+			{
+				e.printStackTrace();
+				return false;
+			}
+
+		}
+		return true;
+	}
+	public void addAll(ArrayList<Integer> a)
+	{
+		code.addAll(a);
 	}
 	public void deleteCode()
 	{
@@ -77,10 +116,17 @@ public class R4Code implements R4Item {
 	{
 		this.codeDesc = codeDesc;
 	}
-	
+	public boolean getEnabled()
+	{
+		return codeEnabled;
+	}
+	public void setEnabled(boolean enable)
+	{
+		codeEnabled = enable;
+	}
 	public Byte[] toByte()
 	{
-		ArrayList<Byte> b = new ArrayList<Byte>();
+		ArrayList<Byte> b = new ArrayList<>();
 		// Total chunks
 		b.add((byte) 0); // Set this later
 		b.add((byte) 0); // This too

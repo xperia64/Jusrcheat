@@ -9,12 +9,11 @@ public class EndianUtils {
 		{
 			System.out.println("Error: Bad Int Length");
 		}
-		return (int)( ((b[3]<<24)&0xFF000000) | ((b[2] << 16)&0xFF0000) | ((b[1] << 8)&0xFF00) | (b[0]&0xFF));
+		return ( ((b[3]<<24)&0xFF000000) | ((b[2] << 16)&0xFF0000) | ((b[1] << 8)&0xFF00) | (b[0]&0xFF));
 	}
 	public static byte[] int2little(int i)
 	{
-		byte[] b = {(byte) (i&0xFF), (byte) ((i>>8)&0xFF), (byte) ((i>>16)&0xFF), (byte) ((i>>24)&0xFF)};
-		return b;
+		return new byte[]{(byte) (i&0xFF), (byte) ((i>>8)&0xFF), (byte) ((i>>16)&0xFF), (byte) ((i>>24)&0xFF)};
 	}
 	
 	public static short little2short(byte[] b)
@@ -27,8 +26,7 @@ public class EndianUtils {
 	}
 	public static byte[] short2little(short s)
 	{
-		byte[] b = {(byte) (s&0xFF), (byte) ((s>>8)&0xFF)};
-		return b;
+		return new byte[]{(byte) (s&0xFF), (byte) ((s>>8)&0xFF)};
 	}
 	
 	// Note: &3 = %4

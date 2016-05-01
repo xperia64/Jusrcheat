@@ -20,7 +20,7 @@ public class R4Game {
 	private int numItems;
 	
 	private ArrayList<R4Item> items;
-	
+	public static final String DEFAULT_MASTER="00000000 00000001\n00000000 00000000\n00000000 00000000\n00000000 00000000";
 	// Read an existing game
 	public R4Game(String inFile, int pointer, String gameId, int gameIdNum) throws IOException
 	{
@@ -101,11 +101,29 @@ public class R4Game {
 	{
 		return masterCode;
 	}
+	public String getMasterCodeStr(){
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i<masterCode.length; i+=2)
+		{
+			sb.append(String.format("%08X %08X\n",masterCode[i], masterCode[i+1]));
+		}
+		return sb.substring(0, sb.length()-1);
+	}
 	public void setMasterCode(int[] master)
 	{
 		for(int i = 0; i<8; i++)
 		{
 			this.masterCode[i] = master[i];
+		}
+	}
+	public void setMasterCode(String mas)
+	{
+		mas = mas.replaceAll("[\n]+"," ");
+		mas = mas.replaceAll("[ ]+"," ");
+		String[] strMasS = mas.split(" ");
+		for(int o = 0; o<strMasS.length; o++)
+		{
+			this.masterCode[o] = ((int)Long.parseLong(strMasS[o],16));
 		}
 	}
 	public boolean getEnable()
@@ -136,6 +154,7 @@ public class R4Game {
 	{
 		items.remove(num);
 	}
+	public void delAll(){ items.clear(); }
 	public String getGameId()
 	{
 		return gameId;
@@ -163,7 +182,7 @@ public class R4Game {
 			}
 			numItems++;
 		}
-		ArrayList<Byte> b = new ArrayList<Byte>();
+		ArrayList<Byte> b = new ArrayList<>();
 		// Write the Game title
 		byte[] tmp = EndianUtils.str2byte(gameTitle, true);
 		for(byte bb : tmp)

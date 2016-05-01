@@ -13,6 +13,7 @@ public class R4Folder implements R4Item {
 	private String foldDesc;
 	
 	private ArrayList<R4Code> codes;
+	private boolean isMisc = false;
 	public R4Folder(short numCodes, short flags, DataInputStream input) throws IOException
 	{
 		this.numCodes = (numCodes)&0xFFFF;
@@ -58,6 +59,14 @@ public class R4Folder implements R4Item {
 	{
 		this.foldName = foldName;
 		this.foldDesc = foldDesc;
+		this.isMisc = false;
+		codes = new ArrayList<>();
+	}
+	public R4Folder(String foldName, String foldDesc, boolean isMisc)
+	{
+		this.foldName = foldName;
+		this.foldDesc = foldDesc;
+		this.isMisc = isMisc;
 		codes = new ArrayList<>();
 	}
 	public ArrayList<R4Code> getCodes()
@@ -80,7 +89,10 @@ public class R4Folder implements R4Item {
 	{
 		codes.remove(num);
 	}
-	
+	public void delAll()
+	{
+		codes.clear();
+	}
 	public String getName()
 	{
 		return foldName;
@@ -111,14 +123,17 @@ public class R4Folder implements R4Item {
 		return numCodes;
 	}
 	
-	
+	public boolean getIsMisc()
+	{
+		return isMisc;
+	}
 	public Byte[] toByte()
 	{
-		ArrayList<Byte> b = new ArrayList<Byte>();
+		ArrayList<Byte> b = new ArrayList<>();
 		byte[] tmp = EndianUtils.short2little((short)numCodes);
 		// Total chunks
-		b.add((byte) tmp[0]); // Set this later
-		b.add((byte) tmp[1]); // This too
+		b.add(tmp[0]); // Set this later
+		b.add(tmp[1]); // This too
 		b.add((byte) 0);
 		b.add((byte) (0x10|(oneHot?1:0)));
 		byte[] foldText = EndianUtils.str2byte(foldName, foldDesc, true);
